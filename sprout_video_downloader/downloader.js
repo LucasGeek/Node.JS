@@ -1,7 +1,15 @@
+// Title: sprout video downloader
+// Description: Downloader video Sprout
+// Author: Lucas Albuquerque
+// Date: 14-Abr-2020
+
+console.log("Download sprout video; Generate m3u8; Generate MP4\n");
+
 const puppeteer = require('puppeteer');
 const util = require('util');
 const fs = require('fs');
 const request = require("request");
+const execSync = require('child_process').execSync;
 
 const videoURL = process.argv.slice(2)[0];
 
@@ -33,7 +41,7 @@ const videoURL = process.argv.slice(2)[0];
                     
                     let sproutData = JSON.parse(Buffer.from(base64Data, 'base64').toString());
                     
-                    const filename = sproutData.title;
+                    const filename = sproutData.title.replace(/\s/g, '');
                     
                     const baseUrl = util.format("https://hls2.videos.sproutvideo.com/%s/%s/video/", sproutData.s3_user_hash, sproutData.s3_video_hash);
                     
@@ -54,18 +62,29 @@ const videoURL = process.argv.slice(2)[0];
                         '&sessionID=' + sproutData.sessionID 
                         
                     });
+
+                    const filegenerate = filename.replace('.mp4', '') + '.m3u8'
                     
-                    let m3u8FilePath = __dirname + '/' + filename + '.m3u8';
+                    let m3u8FilePath = __dirname + '/' + filegenerate;
                     
                     fs.writeFile(m3u8FilePath, m3u8Content, function(err) {
-                        
                         if(err) {
-                            return console.log(err);
-                        }   
+                            return console.error(err);
+                        }
+
+                        console.warn("File created => " + m3u8FilePath);
+
+                        browser.close();
+                        browser.disconnect();
+                        browser.off();
+
+                        var options = {
+                            encoding: 'utf8'
+                        };
                         
-                        console.log("File "+m3u8FilePath+" saved");
-                    }); 
-                    
+                        const cmd = "echo 'Gerando o video .mp4' && sh file.sh " + filegenerate;
+                        console.log(execSync(cmd, options));
+                    });
                 });
                 
             }
@@ -74,11 +93,9 @@ const videoURL = process.argv.slice(2)[0];
             
         });
         
-        // page.close();
-        
+        //page.close();
         
     } catch (error) {
-        console.log(error);
+        return console.error(error);
     }
-    
 })();
