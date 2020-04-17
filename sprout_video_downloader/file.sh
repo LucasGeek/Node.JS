@@ -27,7 +27,7 @@ fi
 counter=0
 
 # Parsing ffmpeg stderr and stdout for cleaner terminal output
-ffmpeg -y -hide_banner -loglevel info -i $1 -c copy -bsf:a aac_adtstoasc "$output_filename.mp4" 2>&1 \
+ffmpeg -y -hide_banner -loglevel info -i $1 -acodec copy -bsf:a aac_adtstoasc -vcodec copy "$output_filename.mp4" 2>&1 \
 	| while read -r OUTPUT || [ -n "$OUTPUT" ]; do
 
 	if [ $counter = 4 ]; then
